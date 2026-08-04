@@ -82,12 +82,10 @@ class ETFMonitor:
                 self.df[col] = self.df[col].astype(str).str.replace(',', '', regex=False)
                 self.df[col] = pd.to_numeric(self.df[col], errors='coerce')
         
-        # 2026/03/24 校正：API (all_etf.txt) 的 c, d 欄位單位通常為「十股」，需乘以 10 換算為「個」
-        # 註：0050 在 API 中為 11 位數 (如 180億)，乘以 10 後為 1800億，使用者確認此比例正確。
-        if '已發行單位' in self.df.columns:
-            self.df['已發行單位'] = self.df['已發行單位'] * 10
-        if '單位差異' in self.df.columns:
-            self.df['單位差異'] = self.df['單位差異'] * 10
+        # 2026/08/04 校正：實測 all_etf.txt 的 c, d 欄位已為實際「個」單位，
+        # 不需再乘以 10（先前 2026/03/24 的 x10 換算已不適用，會使數值虛增 10 倍）。
+        # 驗證：0050 raw c=22,487,000,000 個 x NAV 100.5 ≈ 2.26兆，與公開資產規模(約2.1兆)量級相符；
+        #      00904 raw c=164,112,000 個 x 市價 38.02 ≈ 62.4億，與公開資產規模 62.35億 幾乎一致。
 
         # 過濾監控清單
         self.df = self.df[self.df['代碼'].isin(self.watchlist)]
